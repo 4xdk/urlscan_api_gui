@@ -78,7 +78,6 @@ def show_image(data=None):
     im = PIL.Image.open(BytesIO(data))
     im.show()
 
-
 def save_image(url=None, path=None, data=None):
     """
     Will convert image from bytes object to image and save it as a PNG.
@@ -89,7 +88,6 @@ def save_image(url=None, path=None, data=None):
     """
     # Load image from BytesIO
     image_to_save = PIL.Image.open(BytesIO(data))
-
     image_to_save.save(path + url + '.png')
 
 def save_whois(text=None, path=None):
@@ -124,36 +122,42 @@ window = sg.Window('URLSCAN API CONNECT', layout)
 while True:
     event, values = window.read()
     print(event, values)  # for debugging
+
     if event == sg.WIN_CLOSED or event == 'Exit':
         break
-    if event == '-SCAN-':
+
+    if event == '-SCAN-': # Get image from URLSCAN
         url = values['-URL-']
         try:
-            data = api_call(url)
+            image_data = api_call(url)
         except KeyError:
             sg.popup(f'The website {url} \nis currently not available. \nCheck if provided URL is correct and do not '
                      f'violate urlscan.io regulations.\n Also, check if API Key is provided and is correct.',
                      title='Error!')
             continue
-        im = convert_to_bytes(data, resize=(800, 600))
+        im = convert_to_bytes(image_data, resize=(800, 600))
         window['-IMAGE-'].update(data=im)
-    if event == '-SHOW-':
+
+    if event == '-SHOW-': # Show image in GUI
         try:
-            show_image(data)
+            show_image(image_data)
         except NameError:
             sg.popup('There is no image to show. \nPlease do the scan first or scan a available website!',
                      title='Error!')
             continue
-    if event == '-SAVE-':
+
+    if event == '-SAVE-': # Save image to disk
         try:
-            save_image(url=url, path=values['-PATH-'], data=data)
+            save_image(url=url, path=values['-PATH-'], data=image_data)
         except (FileNotFoundError, NameError):
             sg.popup(f'The path is broken. \nCheck if provided PATH is correct.\nOr do the scan before saving '
                      f'the original image!', title='Error!')
             continue
-    if event == '-SET-CURRENT-DIR-':
+
+    if event == '-SET-CURRENT-DIR-': # Fill in directory field with current directory
         window['-PATH-'].update(os.getcwd() + os.sep)
-    if event == '-GET-WHOIS-':
+
+    if event == '-GET-WHOIS-': # Query RiskIQ and show result excerpt in Gui
         url = values['-URL-']
         parsed = urlparse(url)
 
@@ -174,9 +178,8 @@ while True:
             show_in_gui_whois = '\n'.join(show_in_gui_whois.split('\n')[0:6]) + '\n... [truncated]'
 
         window['-WHOIS-RAW-'].update(show_in_gui_whois)
-            
-        # window['-PATH-'].update(os.getcwd() + os.sep)
-    if event == '-SAVE-WHOIS-':
+
+    if event == '-SAVE-WHOIS-': # Save Whois result to disk
         try:
             save_whois(text=global_data['whois'].raw['rawText'], path=values['-PATH-'])
             sg.popup(f'Saved!', title='Success!')
@@ -184,6 +187,8 @@ while True:
             sg.popup(f'The path is broken. \nCheck if provided PATH is correct.\nOr do the scan before saving '
                      f'the whois.txt file!', title='Error!')
             continue
+
+
 
 
 window.close()
