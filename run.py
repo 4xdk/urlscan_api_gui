@@ -7,6 +7,7 @@ import json
 import time
 import os, pdb
 import whois
+import excel
 from urllib.parse import urlparse
 from io import BytesIO
 
@@ -188,7 +189,7 @@ while True:
                      f'the whois.txt file!', title='Error!')
             continue
 
-
+    if event == '-SAVE-TO-EXCEL-': # Save all queried data to a new excel file
 
 
 window.close()
